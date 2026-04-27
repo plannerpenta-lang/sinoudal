@@ -1,0 +1,3 @@
+[nixpacks]
+BUILD_COMMAND = "npm install && npm run build"
+START_COMMAND = "npx serve dist -p $PORT"
