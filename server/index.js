@@ -70,6 +70,11 @@ io.on('connection', (socket) => {
     io.emit('heartbeat:modeChanged', { mode: data.mode });
   });
 
+  socket.on('answer:adminSubmit', (data) => {
+    console.log('[SERVER] answer:adminSubmit → broadcasting answer:adminSubmitted', data.answer);
+    io.emit('answer:adminSubmitted', { answer: data.answer });
+  });
+
   socket.on('disconnect', () => {
     console.log('[SERVER] Client disconnected:', socket.id);
   });

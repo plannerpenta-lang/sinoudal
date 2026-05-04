@@ -117,6 +117,7 @@ export default function LandingPage() {
     };
 
     const handleAdminSubmitted = (data) => {
+      console.log('[LANDING] answer:adminSubmitted received:', data);
       setPopupAnswer(data.answer);
       setShowPopup(true);
       sounds.answerAdmin();

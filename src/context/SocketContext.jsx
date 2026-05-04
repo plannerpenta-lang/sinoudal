@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 // In prod: Express + Socket.io on :3001, serving the React build
 const SOCKET_URL = import.meta.env.PROD
   ? window.location.origin
-  : 'http://localhost:5173';
+  : 'http://localhost:3001';
 
 const SocketContext = createContext(null);
 

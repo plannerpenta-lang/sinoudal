@@ -49,6 +49,7 @@ export default function SessionController() {
   };
 
   const submitAnswer = (answer) => {
+    console.log('[ADMIN] submitAnswer:', answer, '| isConnected:', isConnected);
     sounds.answerAdmin();
     setLastAnswer(answer);
     emit('answer:adminSubmit', { answer });
