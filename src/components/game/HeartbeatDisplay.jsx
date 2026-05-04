@@ -221,7 +221,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
 
   return (
     <div className="heartbeat-wrapper">
-      <canvas ref={canvasRef} className="ecg-canvas" width={640} height={380} />
+      <canvas ref={canvasRef} className="ecg-canvas" width={640} height={300} />
     </div>
   );
 }

@@ -146,7 +146,7 @@ export default function SessionController() {
               className="ctrl-btn ctrl-btn-true"
             >
               <span className="btn-letter">V</span>
-              VERDAD
+              VERDADERO
             </button>
             <button
               onClick={() => submitAnswer('false')}

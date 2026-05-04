@@ -181,7 +181,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="popup-label">
-            {popupAnswer === 'true' ? 'VERDAD' : 'MENTIRA'}
+            {popupAnswer === 'true' ? 'VERDADERO' : 'FALSO'}
           </div>
         </div>
       )}
