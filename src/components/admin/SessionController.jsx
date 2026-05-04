@@ -51,7 +51,7 @@ export default function SessionController() {
   const submitAnswer = (answer) => {
     sounds.answerAdmin();
     setLastAnswer(answer);
-    emit('answer:adminSubmitted', { answer });
+    emit('answer:adminSubmit', { answer });
   };
 
   return (
