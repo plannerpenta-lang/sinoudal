@@ -173,46 +173,54 @@ body {
   opacity: 1;
 }
 
-/* ═══ PARTICIPANT BUTTON — YELLOW ACCENT ═══ */
+/* ═══ PARTICIPANT BUTTON — YELLOW BACKGROUND ═══ */
 .btn-participant {
-  border-color: rgba(217, 162, 27, 0.3);
+  background: #D9A21B;
+  border-color: #D9A21B;
+  color: #1a1a1a;
+  font-weight: 700;
 }
 
 .btn-participant:hover {
-  background: rgba(217, 162, 27, 0.15);
-  border-color: rgba(217, 162, 27, 0.6);
-  color: #D9A21B;
-  box-shadow: 0 0 20px rgba(217, 162, 27, 0.2);
+  background: #e6b22a;
+  border-color: #e6b22a;
+  color: #1a1a1a;
+  box-shadow: 0 4px 20px rgba(217, 162, 27, 0.4);
+  transform: translateY(-2px);
 }
 
 .btn-participant.active {
-  background: linear-gradient(135deg, rgba(217, 162, 27, 0.2), rgba(217, 162, 27, 0.1));
-  border-color: #D9A21B;
-  color: #D9A21B;
+  background: #D9A21B;
+  border-color: #fff;
+  color: #1a1a1a;
   box-shadow: 
-    0 0 30px rgba(217, 162, 27, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 0 0 2px #D9A21B,
+    0 4px 20px rgba(217, 162, 27, 0.5);
 }
 
-/* ═══ ADMIN BUTTON — RED ACCENT ═══ */
+/* ═══ ADMIN BUTTON — RED BACKGROUND ═══ */
 .btn-admin {
-  border-color: rgba(227, 28, 75, 0.3);
+  background: #E31C4B;
+  border-color: #E31C4B;
+  color: #fff;
+  font-weight: 700;
 }
 
 .btn-admin:hover {
-  background: rgba(227, 28, 75, 0.15);
-  border-color: rgba(227, 28, 75, 0.6);
-  color: #E31C4B;
-  box-shadow: 0 0 20px rgba(227, 28, 75, 0.2);
+  background: #f02d5c;
+  border-color: #f02d5c;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(227, 28, 75, 0.4);
+  transform: translateY(-2px);
 }
 
 .btn-admin.active {
-  background: linear-gradient(135deg, rgba(227, 28, 75, 0.2), rgba(227, 28, 75, 0.1));
-  border-color: #E31C4B;
-  color: #E31C4B;
+  background: #E31C4B;
+  border-color: #fff;
+  color: #fff;
   box-shadow: 
-    0 0 30px rgba(227, 28, 75, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 0 0 2px #E31C4B,
+    0 4px 20px rgba(227, 28, 75, 0.5);
 }
 
 .app-nav button::before {
