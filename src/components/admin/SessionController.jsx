@@ -122,8 +122,9 @@ export default function SessionController() {
     emit('session:start', { questions });
     emit('audio:enable', { enabled: true });
     setSessionActive(true);
-    startHeartbeat();
+    timerExpiredRef.current = false;
     startAdminTimer();
+    startHeartbeat();
   };
 
   const endSession = () => {
@@ -138,8 +139,10 @@ export default function SessionController() {
 
   const nextQuestion = () => {
     emit('session:nextQuestion');
-    startHeartbeat();
+    // Importante: primero resetear el estado del timer, luego iniciar heartbeat
+    timerExpiredRef.current = false;
     startAdminTimer();
+    startHeartbeat();
   };
 
   const setBoosted = () => {
