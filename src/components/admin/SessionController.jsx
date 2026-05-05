@@ -136,6 +136,12 @@ export default function SessionController() {
     }
   };
 
+  const nextQuestion = () => {
+    emit('session:nextQuestion');
+    startHeartbeat();
+    startAdminTimer();
+  };
+
   const setBoosted = () => {
     sounds.boost();
     emit('heartbeat:setMode', { mode: 'boosted' });
