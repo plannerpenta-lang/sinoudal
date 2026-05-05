@@ -41,7 +41,6 @@ export default function SessionController() {
   const [sessionActive, setSessionActive] = useState(false);
   const [heartbeatMode, setHeartbeatMode] = useState('normal');
   const [lastAnswer, setLastAnswer] = useState(null);
-  const [activeEffect, setActiveEffect] = useState(null);
   const { emit, isConnected } = useSocket();
   const heartbeatIntervalRef = useRef(null);
   const adminTimerRef = useRef(null);
@@ -156,13 +155,6 @@ export default function SessionController() {
     setHeartbeatMode('normal');
   };
 
-  const triggerGlitch = (duration = 1000) => {
-    sounds.glitch();
-    emit('effect:glitch', { duration });
-    setActiveEffect('glitch');
-    setTimeout(() => setActiveEffect(null), duration);
-  };
-
 const submitAnswer = (answer) => {
     console.log('[ADMIN] submitAnswer:', answer, '| isConnected:', isConnected);
     setLastAnswer(answer);
@@ -221,27 +213,6 @@ const submitAnswer = (answer) => {
             >
               <span className="btn-indicator"></span>
               BOOST
-            </button>
-          </div>
-        </div>
-
-        {/* ── EFFECTS SECTION ── */}
-        <div className="control-section">
-          <div className="section-header">
-            <span className="section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-              </svg>
-            </span>
-            <h3 className="section-title">Efectos</h3>
-          </div>
-          <div className="effects-controls">
-            <button
-              onClick={() => triggerGlitch(1000)}
-              className={`ctrl-btn ctrl-btn-outline ${activeEffect === 'glitch' ? 'active-glitch' : ''}`}
-            >
-              <span className="btn-indicator"></span>
-              GLITCH
             </button>
           </div>
         </div>

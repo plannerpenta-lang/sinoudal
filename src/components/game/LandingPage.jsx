@@ -12,7 +12,6 @@ export default function LandingPage() {
   const [questionText, setQuestionText] = useState('');
   const [timeLeft, setTimeLeft] = useState(8);
   const [timerExpired, setTimerExpired] = useState(false);
-  const [glitchActive, setGlitchActive] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupAnswer, setPopupAnswer] = useState(null);
   const [alert, setAlert] = useState(null);
@@ -84,7 +83,6 @@ export default function LandingPage() {
 
     const handleQuestionChanged = (data) => {
       sounds.questionChange();
-      sounds.glitch();
       setCurrentQuestion(data.index);
       const q = questionsRef.current[data.index];
       if (q) setQuestionText(q.text);
@@ -102,12 +100,6 @@ export default function LandingPage() {
       console.log('[LANDING] heartbeat:modeChanged received:', data.mode);
       setHeartbeatMode(data.mode);
       heartbeatModeRef.current = data.mode;
-    };
-
-    const handleGlitch = (data) => {
-      setGlitchActive(true);
-      sounds.glitch();
-      setTimeout(() => setGlitchActive(false), data.duration);
     };
 
     const handleAlert = (data) => {
@@ -129,7 +121,6 @@ export default function LandingPage() {
     on('session:questionChanged', handleQuestionChanged);
     on('session:ended', handleEnded);
     on('heartbeat:modeChanged', handleHeartbeatMode);
-    on('effect:glitch', handleGlitch);
     on('alert:show', handleAlert);
     on('answer:adminSubmitted', handleAdminSubmitted);
 
@@ -139,13 +130,12 @@ export default function LandingPage() {
       off('session:questionChanged', handleQuestionChanged);
       off('session:ended', handleEnded);
       off('heartbeat:modeChanged', handleHeartbeatMode);
-      off('effect:glitch', handleGlitch);
       off('alert:show', handleAlert);
       off('answer:adminSubmitted', handleAdminSubmitted);
     };
   }, [on, off]);
 
-  const effectiveMode = glitchActive ? 'glitch' : timerExpired ? 'flatline' : heartbeatMode;
+  const effectiveMode = timerExpired ? 'timeout' : heartbeatMode;
   const statusClass = phase === 'idle' ? 'idle' : 'active';
   const statusText = phase === 'idle' ? 'STANDBY' : 'EN VIVO';
 
@@ -165,7 +155,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className={`landing-page ${glitchActive ? 'glitch-active' : ''}`}>
+    <div className="landing-page">
       {alert && (
         <div className={`alert-banner alert-${alert.type}`}>
           <span className="alert-icon">⚠</span>
