@@ -1,71 +1,76 @@
-import { useEffect, useRef } from 'react';
-
-// Simple beep function using Web Audio API
-
-// Global audio context that persists
-let globalAudioContext = null;
-
-export const initHeartbeatAudio = () => {
-  if (!globalAudioContext) {
-    globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (globalAudioContext.state === 'suspended') {
-    globalAudioContext.resume();
-  }
-  // Play a silent sound to unlock audio
-  const oscillator = globalAudioContext.createOscillator();
-  const gainNode = globalAudioContext.createGain();
-  gainNode.gain.value = 0;
-  oscillator.connect(gainNode);
-  gainNode.connect(globalAudioContext.destination);
-  oscillator.start();
-  oscillator.stop(globalAudioContext.currentTime + 0.001);
-  
-  console.log('🔊 Heartbeat audio initialized');
-  return globalAudioContext;
-};
-
-const playHeartbeatBeep = (volume = 0.15) => {
-  try {
-    const ctx = initHeartbeatAudio();
-    if (!ctx) return;
-    
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-    
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.12);
-    
-    console.log('♥ Beep!');
-  } catch (e) {
-    console.log('Audio error:', e);
-  }
-};
+import { useEffect, useRef, useCallback } from 'react';
 
 export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, audioEnabled = false }) {
   const canvasRef = useRef(null);
   const phaseRef = useRef(0);
-  const offsetRef = useRef(0);
-  const modeRef = useRef(mode);
-  const pulseRef = useRef(0);
-  const lastBeatRef = useRef(0);
+  const audioContextRef = useRef(null);
+  const lastBeatTimeRef = useRef(0);
   
-  // Determine effective mode: if timeLeft is 0, show timeout state
   const effectiveMode = timeLeft === 0 ? 'timeout' : mode;
 
+  // Initialize audio when enabled or on user interaction
   useEffect(() => {
-    modeRef.current = effectiveMode;
-  }, [effectiveMode]);
+    const initAudio = async () => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+        console.log('🔊 Audio context resumed');
+      }
+    };
+
+    // Try to init on first interaction
+    const handleClick = () => {
+      initAudio();
+      console.log('🔊 Audio initialized by user click');
+    };
+
+    window.addEventListener('click', handleClick, { once: true });
+    
+    // Also try to init when audio becomes enabled
+    if (audioEnabled) {
+      initAudio();
+    }
+    
+    return () => window.removeEventListener('click', handleClick);
+  }, [audioEnabled]);
+
+  const playBeep = useCallback(async () => {
+    if (!audioEnabled) return;
+    
+    // Ensure audio context exists and is running
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    if (audioContextRef.current.state === 'suspended') {
+      await audioContextRef.current.resume();
+    }
+    
+    try {
+      const ctx = audioContextRef.current;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.frequency.value = 800;
+      osc.type = 'sine';
+      
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.1);
+      
+      console.log('♥ Beep played! audioEnabled=', audioEnabled, 'ctx.state=', ctx.state);
+    } catch (e) {
+      console.log('Beep error:', e.message);
+    }
+  }, [audioEnabled]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -85,7 +90,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, aud
       const h = canvas.height;
       const centerY = h / 2;
 
-      // Clear with fade effect for trail
+      // Fade effect
       ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
       ctx.fillRect(0, 0, w, h);
 
@@ -93,123 +98,33 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, aud
       const beatInterval = 60000 / currentBpm;
       const phaseIncrement = (16.67 / beatInterval) * delta * 0.06;
       phaseRef.current = (phaseRef.current + phaseIncrement) % 1;
-      offsetRef.current = (offsetRef.current + phaseIncrement * 0.08) % 1;
 
-      // Pulse effect synced with heartbeat
-      const pulseSpeed = currentMode === 'boosted' ? 2.3 : currentMode === 'idle' ? 0.6 : 1.2;
-      pulseRef.current += delta * 0.001 * pulseSpeed;
-      const pulseIntensity = (Math.sin(pulseRef.current) + 1) / 2;
-
-      // Aurora background glow
-      const auroraGrad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w);
-      if (currentMode === 'glitch') {
-        auroraGrad.addColorStop(0, `rgba(255, 0, 50, ${0.1 + pulseIntensity * 0.1})`);
-        auroraGrad.addColorStop(0.5, 'rgba(255, 0, 50, 0.02)');
-      } else if (currentMode === 'boosted') {
-        auroraGrad.addColorStop(0, `rgba(255, 0, 80, ${0.15 + pulseIntensity * 0.15})`);
-        auroraGrad.addColorStop(0.5, 'rgba(255, 0, 50, 0.03)');
-      } else {
-        auroraGrad.addColorStop(0, `rgba(0, 255, 200, ${0.04 + pulseIntensity * 0.04})`);
-        auroraGrad.addColorStop(0.5, 'rgba(0, 255, 200, 0.01)');
+      // Play beep on each beat
+      const beatDuration = 60000 / currentBpm;
+      const timeSinceLastBeat = now - lastBeatTimeRef.current;
+      
+      if (timeSinceLastBeat >= beatDuration) {
+        lastBeatTimeRef.current = now;
+        playBeep();
       }
-      auroraGrad.addColorStop(1, 'transparent');
-      ctx.fillStyle = auroraGrad;
-      ctx.fillRect(0, 0, w, h);
 
-      // Enhanced grid with glow
-      ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted' 
-        ? `rgba(255, 0, 50, ${0.08 + pulseIntensity * 0.05})`
-        : `rgba(0, 255, 200, ${0.04 + pulseIntensity * 0.03})`;
+      // Draw grid
+      ctx.strokeStyle = currentMode === 'timeout' || currentMode === 'boosted' 
+        ? 'rgba(255, 0, 50, 0.08)' 
+        : 'rgba(0, 255, 200, 0.08)';
       ctx.lineWidth = 0.4;
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = ctx.strokeStyle;
-
+      
       for (let x = 0; x <= w; x += 20) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
       }
       for (let y = 0; y <= h; y += 20) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
       }
 
-      // Major grid lines
-      ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted'
-        ? `rgba(255, 0, 50, ${0.15 + pulseIntensity * 0.1})`
-        : `rgba(0, 255, 200, ${0.08 + pulseIntensity * 0.05})`;
-      ctx.lineWidth = 0.8;
-      ctx.shadowBlur = 15;
-
-      for (let x = 0; x <= w; x += 100) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
-      }
-      for (let y = 0; y <= h; y += 100) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
-      }
-
-      // Center line
-      ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted'
-        ? `rgba(255, 0, 50, ${0.3 + pulseIntensity * 0.2})`
-        : `rgba(0, 255, 200, ${0.15 + pulseIntensity * 0.1})`;
-      ctx.lineWidth = 1;
-      ctx.shadowBlur = 20;
-      ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      ctx.lineTo(w, centerY);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      if (currentMode === 'glitch') {
-        // Enhanced glitch effect
-        const glitchIntensity = 0.5 + pulseIntensity * 0.5;
-        ctx.strokeStyle = `rgba(255, 0, 50, ${glitchIntensity})`;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = '#ff0033';
-        ctx.shadowBlur = 20 + pulseIntensity * 10;
-        ctx.beginPath();
-        ctx.moveTo(0, centerY);
-        for (let x = 0; x < w; x++) {
-          const noise = Math.random() > 0.85 ? (Math.random() - 0.5) * 40 * glitchIntensity : 0;
-          const y = centerY + noise + Math.sin(x * 0.1) * 5;
-          ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-
-        // Glitch fill
-        ctx.fillStyle = `rgba(255, 0, 50, ${0.05 + pulseIntensity * 0.1})`;
-        ctx.fillRect(0, 0, w, h);
-
-        // Horizontal glitch lines
-        for (let i = 0; i < 12; i++) {
-          const y = Math.random() * h;
-          const thickness = Math.random() * 3;
-          ctx.fillStyle = `rgba(255, 0, 50, ${Math.random() * 0.3})`;
-          ctx.fillRect(0, y, w, thickness);
-        }
-      } else if (currentMode === 'flatline') {
-        // Flatline with subtle pulse
-        ctx.strokeStyle = `rgba(100, 100, 100, ${0.4 + pulseIntensity * 0.1})`;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = '#666';
-        ctx.shadowBlur = 5;
-        ctx.beginPath();
-        ctx.moveTo(0, centerY);
-        ctx.lineTo(w, centerY);
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      } else if (currentMode === 'timeout') {
-        // Timeout - flatline red alert
-        ctx.strokeStyle = `rgba(255, 0, 50, ${0.8 + pulseIntensity * 0.2})`;
+      // Draw ECG
+      if (currentMode === 'timeout') {
+        // Red flatline
+        ctx.strokeStyle = 'rgba(255, 0, 50, 0.9)';
         ctx.lineWidth = 3;
         ctx.shadowColor = '#ff0033';
         ctx.shadowBlur = 20;
@@ -219,65 +134,43 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, aud
         ctx.stroke();
         ctx.shadowBlur = 0;
         
-        // Red alert glow background
-        ctx.fillStyle = `rgba(255, 0, 50, ${0.1 + pulseIntensity * 0.1})`;
+        ctx.fillStyle = 'rgba(255, 0, 50, 0.1)';
         ctx.fillRect(0, 0, w, h);
       } else {
-        // Normal / Boosted ECG
+        // Normal ECG
         const isBoosted = currentMode === 'boosted';
         const baseColor = isBoosted ? '#ff0055' : '#00ffcc';
-        const glowColor = isBoosted ? '#ff0055' : '#00ffcc';
-        const lineW = isBoosted ? 3 : 2.5;
-        const glowIntensity = isBoosted ? 30 + pulseIntensity * 15 : 25 + pulseIntensity * 10;
-
-        // Main ECG line with enhanced glow
-        ctx.shadowColor = glowColor;
-        ctx.shadowBlur = glowIntensity;
+        
+        ctx.shadowColor = baseColor;
+        ctx.shadowBlur = isBoosted ? 25 : 15;
         ctx.strokeStyle = baseColor;
-        ctx.lineWidth = lineW;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+        ctx.lineWidth = isBoosted ? 3 : 2;
         ctx.beginPath();
         ctx.moveTo(0, centerY);
 
         const cycle = phaseRef.current;
 
-        // Check if we're at the start of a new beat (QRS complex) to play beep
-        const beatPhase = cycle % 1;
-        if (audioEnabled && beatPhase >= 0.16 && beatPhase < 0.18 && lastBeatRef.current !== Math.floor(cycle)) {
-          lastBeatRef.current = Math.floor(cycle);
-          // Play subtle beep synchronized with heartbeat
-          playHeartbeatBeep(isBoosted ? 0.15 : 0.08);
-        }
-
         for (let x = 0; x < w; x++) {
           const t = x / w;
           const rawPhase = cycle + t * 0.15;
           const phase = rawPhase % 1;
-
           let y = centerY;
           
-          // Smoother baseline
           y += Math.sin(x * 0.2 + cycle * 15) * 1.5;
 
-          // P wave (atrial depolarization)
           if (phase >= 0.08 && phase < 0.14) {
             const pPhase = (phase - 0.08) / 0.06;
             y -= 12 * Math.sin(pPhase * Math.PI);
-          }
-          // QRS complex (ventricular depolarization)
-          else if (phase >= 0.16 && phase < 0.22) {
+          } else if (phase >= 0.16 && phase < 0.22) {
             const qrsPhase = (phase - 0.16) / 0.06;
             if (qrsPhase < 0.15) {
-              y += 8; // Q
+              y += 8;
             } else if (qrsPhase < 0.5) {
-              y -= 65 * Math.sin((qrsPhase - 0.15) / 0.35 * Math.PI); // R (taller)
+              y -= 65 * Math.sin((qrsPhase - 0.15) / 0.35 * Math.PI);
             } else {
-              y += 18 * Math.sin((qrsPhase - 0.5) / 0.5 * Math.PI); // S
+              y += 18 * Math.sin((qrsPhase - 0.5) / 0.5 * Math.PI);
             }
-          }
-          // T wave (ventricular repolarization)
-          else if (phase >= 0.36 && phase < 0.52) {
+          } else if (phase >= 0.36 && phase < 0.52) {
             const tPhase = (phase - 0.36) / 0.16;
             y -= 20 * Math.sin(tPhase * Math.PI);
           }
@@ -285,56 +178,6 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, aud
           ctx.lineTo(x, y);
         }
         ctx.stroke();
-
-        // Secondary glow layer
-        ctx.globalAlpha = 0.4;
-        ctx.shadowBlur = glowIntensity * 2;
-        ctx.lineWidth = lineW * 1.5;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-
-        // Phosphor afterglow trail
-        ctx.shadowBlur = 8;
-        ctx.globalAlpha = 0.3;
-        ctx.lineWidth = lineW * 0.7;
-        ctx.beginPath();
-        for (let x = 0; x < w; x++) {
-          const t = x / w;
-          const rawPhase = cycle + t * 0.15 - 0.02;
-          const phase = ((rawPhase % 1) + 1) % 1;
-          let y = centerY;
-          
-          if (phase >= 0.16 && phase < 0.22) {
-            const qrsPhase = (phase - 0.16) / 0.06;
-            if (qrsPhase >= 0.15 && qrsPhase < 0.5) {
-              y -= 65 * Math.sin((qrsPhase - 0.15) / 0.35 * Math.PI);
-            }
-          }
-          
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-
-        // Enhanced scan line
-        const scanX = (offsetRef.current * w * 0.15) % w;
-        const scanGrad = ctx.createLinearGradient(scanX - 40, 0, scanX + 8, 0);
-        scanGrad.addColorStop(0, 'transparent');
-        scanGrad.addColorStop(0.6, `${baseColor}44`);
-        scanGrad.addColorStop(0.9, `${baseColor}88`);
-        scanGrad.addColorStop(1, `${baseColor}CC`);
-        ctx.fillStyle = scanGrad;
-        ctx.fillRect(scanX - 40, 0, 48, h);
-
-        // Bright dot at scan position
-        ctx.shadowColor = baseColor;
-        ctx.shadowBlur = 15;
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(scanX, centerY, 4, 0, Math.PI * 2);
-        ctx.fill();
         ctx.shadowBlur = 0;
       }
 
@@ -342,11 +185,8 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, aud
     };
 
     animationId = requestAnimationFrame(draw);
-
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-    };
-  }, [mode, timeLeft]);
+    return () => cancelAnimationFrame(animationId);
+  }, [effectiveMode, playBeep]);
 
   return (
     <div className="heartbeat-wrapper">
@@ -356,7 +196,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, aud
         width={640} 
         height={280}
         style={{
-          filter: mode === 'boosted' || mode === 'glitch' 
+          filter: effectiveMode === 'boosted' || effectiveMode === 'timeout'
             ? 'drop-shadow(0 0 20px rgba(255,0,80,0.5))' 
             : 'drop-shadow(0 0 20px rgba(0,255,200,0.4))'
         }}
