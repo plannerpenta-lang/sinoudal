@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { initAudio, sounds } from '../../utils/sounds';
 import { useSocket } from '../../context/SocketContext';
-import HeartbeatDisplay, { initHeartbeatAudio } from './HeartbeatDisplay';
+import HeartbeatDisplay from './HeartbeatDisplay';
 import './LandingPage.css';
 
 export default function LandingPage() {
@@ -173,16 +173,8 @@ export default function LandingPage() {
     );
   }
 
-  // Initialize audio on first user interaction
-  const handleUserInteraction = () => {
-    initHeartbeatAudio();
-  };
-
   return (
-    <div 
-      className={`landing-page ${glitchActive ? 'glitch-active' : ''}`}
-      onClick={handleUserInteraction}
-    >
+    <div className={`landing-page ${glitchActive ? 'glitch-active' : ''}`}>
       {alert && (
         <div className={`alert-banner alert-${alert.type}`}>
           <span className="alert-icon">⚠</span>
