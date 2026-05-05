@@ -5,14 +5,13 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
   const phaseRef = useRef(0);
   const offsetRef = useRef(0);
   const modeRef = useRef(mode);
+  const pulseRef = useRef(0);
 
-  // Keep modeRef in sync with prop
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
 
   useEffect(() => {
-    console.log('[HEARTBEAT] effect running, mode:', mode);
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -22,112 +21,151 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
 
     const draw = () => {
       const currentMode = modeRef.current;
-
       const now = performance.now();
       const delta = now - lastTime;
       lastTime = now;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const currentBpm = currentMode === 'boosted' ? 140 : currentMode === 'idle' ? 38 : 72;
-
-      const beatInterval = 60000 / currentBpm;
-      const phaseIncrement = (16.67 / beatInterval) * delta * 0.06;
-      phaseRef.current = (phaseRef.current + phaseIncrement) % 1;
-
-      offsetRef.current = (offsetRef.current + phaseIncrement * 0.08) % 1;
 
       const w = canvas.width;
       const h = canvas.height;
       const centerY = h / 2;
 
-      // ── OSCILLOSCOPE GRID ──
-      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.15)' : 'rgba(0, 255, 200, 0.15)';
-      ctx.lineWidth = 0.3;
+      // Clear with fade effect for trail
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
+      ctx.fillRect(0, 0, w, h);
 
-      for (let x = 0; x <= w; x += 10) {
+      const currentBpm = currentMode === 'boosted' ? 140 : currentMode === 'idle' ? 38 : 72;
+      const beatInterval = 60000 / currentBpm;
+      const phaseIncrement = (16.67 / beatInterval) * delta * 0.06;
+      phaseRef.current = (phaseRef.current + phaseIncrement) % 1;
+      offsetRef.current = (offsetRef.current + phaseIncrement * 0.08) % 1;
+
+      // Pulse effect synced with heartbeat
+      const pulseSpeed = currentMode === 'boosted' ? 2.3 : currentMode === 'idle' ? 0.6 : 1.2;
+      pulseRef.current += delta * 0.001 * pulseSpeed;
+      const pulseIntensity = (Math.sin(pulseRef.current) + 1) / 2;
+
+      // Aurora background glow
+      const auroraGrad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w);
+      if (currentMode === 'glitch') {
+        auroraGrad.addColorStop(0, `rgba(255, 0, 50, ${0.1 + pulseIntensity * 0.1})`);
+        auroraGrad.addColorStop(0.5, 'rgba(255, 0, 50, 0.02)');
+      } else if (currentMode === 'boosted') {
+        auroraGrad.addColorStop(0, `rgba(255, 0, 80, ${0.15 + pulseIntensity * 0.15})`);
+        auroraGrad.addColorStop(0.5, 'rgba(255, 0, 50, 0.03)');
+      } else {
+        auroraGrad.addColorStop(0, `rgba(0, 255, 200, ${0.08 + pulseIntensity * 0.08})`);
+        auroraGrad.addColorStop(0.5, 'rgba(0, 255, 200, 0.02)');
+      }
+      auroraGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = auroraGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Enhanced grid with glow
+      ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted' 
+        ? `rgba(255, 0, 50, ${0.08 + pulseIntensity * 0.05})`
+        : `rgba(0, 255, 200, ${0.08 + pulseIntensity * 0.05})`;
+      ctx.lineWidth = 0.4;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = ctx.strokeStyle;
+
+      for (let x = 0; x <= w; x += 20) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, h);
         ctx.stroke();
       }
-      for (let y = 0; y <= h; y += 10) {
+      for (let y = 0; y <= h; y += 20) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(w, y);
         ctx.stroke();
       }
 
-      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.25)' : 'rgba(0, 255, 200, 0.2)';
-      ctx.lineWidth = 0.6;
-      for (let x = 0; x <= w; x += 50) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
-      }
-
-      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.35)' : 'rgba(0, 255, 200, 0.3)';
+      // Major grid lines
+      ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted'
+        ? `rgba(255, 0, 50, ${0.15 + pulseIntensity * 0.1})`
+        : `rgba(0, 255, 200, ${0.15 + pulseIntensity * 0.1})`;
       ctx.lineWidth = 0.8;
-      for (let y = 0; y <= h; y += 50) {
+      ctx.shadowBlur = 15;
+
+      for (let x = 0; x <= w; x += 100) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= h; y += 100) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(w, y);
         ctx.stroke();
       }
 
-      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.5)' : 'rgba(0, 191, 176, 0.4)';
+      // Center line
+      ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted'
+        ? `rgba(255, 0, 50, ${0.3 + pulseIntensity * 0.2})`
+        : `rgba(0, 255, 200, ${0.3 + pulseIntensity * 0.2})`;
       ctx.lineWidth = 1;
+      ctx.shadowBlur = 20;
       ctx.beginPath();
       ctx.moveTo(0, centerY);
       ctx.lineTo(w, centerY);
       ctx.stroke();
+      ctx.shadowBlur = 0;
 
       if (currentMode === 'glitch') {
-        ctx.strokeStyle = '#ff0033';
-        ctx.lineWidth = 1.5;
+        // Enhanced glitch effect
+        const glitchIntensity = 0.5 + pulseIntensity * 0.5;
+        ctx.strokeStyle = `rgba(255, 0, 50, ${glitchIntensity})`;
+        ctx.lineWidth = 2;
         ctx.shadowColor = '#ff0033';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20 + pulseIntensity * 10;
         ctx.beginPath();
         ctx.moveTo(0, centerY);
         for (let x = 0; x < w; x++) {
-          const slice = Math.random() > 0.9 ? (Math.random() - 0.5) * 30 : 0;
-          ctx.lineTo(x, centerY + slice);
+          const noise = Math.random() > 0.85 ? (Math.random() - 0.5) * 40 * glitchIntensity : 0;
+          const y = centerY + noise + Math.sin(x * 0.1) * 5;
+          ctx.lineTo(x, y);
         }
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(255, 0, 51, 0.1)';
+        // Glitch fill
+        ctx.fillStyle = `rgba(255, 0, 50, ${0.05 + pulseIntensity * 0.1})`;
         ctx.fillRect(0, 0, w, h);
 
-        ctx.strokeStyle = 'rgba(236, 0, 24, 0.4)';
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < 8; i++) {
-          const ny = Math.random() * h;
-          ctx.beginPath();
-          ctx.moveTo(0, ny);
-          ctx.lineTo(w, ny + (Math.random() - 0.5) * 10);
-          ctx.stroke();
+        // Horizontal glitch lines
+        for (let i = 0; i < 12; i++) {
+          const y = Math.random() * h;
+          const thickness = Math.random() * 3;
+          ctx.fillStyle = `rgba(255, 0, 50, ${Math.random() * 0.3})`;
+          ctx.fillRect(0, y, w, thickness);
         }
       } else if (currentMode === 'flatline') {
-        ctx.strokeStyle = 'rgba(0, 255, 208, 0.5)';
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = '#00ffd0';
-        ctx.shadowBlur = 8;
+        // Flatline with subtle pulse
+        ctx.strokeStyle = `rgba(100, 100, 100, ${0.4 + pulseIntensity * 0.1})`;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#666';
+        ctx.shadowBlur = 5;
         ctx.beginPath();
         ctx.moveTo(0, centerY);
         ctx.lineTo(w, centerY);
         ctx.stroke();
         ctx.shadowBlur = 0;
       } else {
-        // ── NORMAL / BOOSTED MODE ──
-        const baseColor = currentMode === 'boosted' ? '#ff0033' : '#00ffd0';
-        const glowColor = currentMode === 'boosted' ? '#ff0033' : '#00ffd0';
-        const lineW = currentMode === 'boosted' ? 2.5 : 2;
+        // Normal / Boosted ECG
+        const isBoosted = currentMode === 'boosted';
+        const baseColor = isBoosted ? '#ff0055' : '#00ffcc';
+        const glowColor = isBoosted ? '#ff0055' : '#00ffcc';
+        const lineW = isBoosted ? 3 : 2.5;
+        const glowIntensity = isBoosted ? 30 + pulseIntensity * 15 : 25 + pulseIntensity * 10;
 
+        // Main ECG line with enhanced glow
         ctx.shadowColor = glowColor;
-        ctx.shadowBlur = currentMode === 'boosted' ? 25 : 15;
+        ctx.shadowBlur = glowIntensity;
         ctx.strokeStyle = baseColor;
         ctx.lineWidth = lineW;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.beginPath();
         ctx.moveTo(0, centerY);
 
@@ -135,55 +173,65 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
 
         for (let x = 0; x < w; x++) {
           const t = x / w;
-          const rawPhase = cycle + t * 0.18;
+          const rawPhase = cycle + t * 0.15;
           const phase = rawPhase % 1;
 
           let y = centerY;
-          y += Math.sin(x * 0.3 + phaseRef.current * 10) * 0.8;
+          
+          // Smoother baseline
+          y += Math.sin(x * 0.2 + cycle * 15) * 1.5;
 
-          if (phase < 0.06) {
-            y = centerY;
-          } else if (phase < 0.10) {
-            y = centerY - 8 * Math.sin((phase - 0.06) / 0.04 * Math.PI);
-          } else if (phase < 0.13) {
-            y = centerY;
-          } else if (phase < 0.17) {
-            y = centerY + 5 * Math.sin((phase - 0.13) / 0.04 * Math.PI);
-          } else if (phase < 0.22) {
-            y = centerY - 58 * Math.sin((phase - 0.17) / 0.05 * Math.PI);
-          } else if (phase < 0.26) {
-            y = centerY + 14 * Math.sin((phase - 0.22) / 0.04 * Math.PI);
-          } else if (phase < 0.36) {
-            y = centerY - 2;
-          } else if (phase < 0.52) {
-            y = centerY - 18 * Math.sin((phase - 0.36) / 0.16 * Math.PI);
-          } else if (phase < 0.62) {
-            y = centerY - 4 * Math.sin((phase - 0.52) / 0.1 * Math.PI);
-          } else {
-            y = centerY + Math.sin(phase * 8) * 1.2;
+          // P wave (atrial depolarization)
+          if (phase >= 0.08 && phase < 0.14) {
+            const pPhase = (phase - 0.08) / 0.06;
+            y -= 12 * Math.sin(pPhase * Math.PI);
+          }
+          // QRS complex (ventricular depolarization)
+          else if (phase >= 0.16 && phase < 0.22) {
+            const qrsPhase = (phase - 0.16) / 0.06;
+            if (qrsPhase < 0.15) {
+              y += 8; // Q
+            } else if (qrsPhase < 0.5) {
+              y -= 65 * Math.sin((qrsPhase - 0.15) / 0.35 * Math.PI); // R (taller)
+            } else {
+              y += 18 * Math.sin((qrsPhase - 0.5) / 0.5 * Math.PI); // S
+            }
+          }
+          // T wave (ventricular repolarization)
+          else if (phase >= 0.36 && phase < 0.52) {
+            const tPhase = (phase - 0.36) / 0.16;
+            y -= 20 * Math.sin(tPhase * Math.PI);
           }
 
           ctx.lineTo(x, y);
         }
         ctx.stroke();
 
-        // ── Phosphor afterglow ──
-        ctx.shadowBlur = 4;
-        ctx.globalAlpha = 0.25;
-        ctx.strokeStyle = baseColor;
-        ctx.lineWidth = lineW * 0.6;
+        // Secondary glow layer
+        ctx.globalAlpha = 0.4;
+        ctx.shadowBlur = glowIntensity * 2;
+        ctx.lineWidth = lineW * 1.5;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Phosphor afterglow trail
+        ctx.shadowBlur = 8;
+        ctx.globalAlpha = 0.3;
+        ctx.lineWidth = lineW * 0.7;
         ctx.beginPath();
         for (let x = 0; x < w; x++) {
           const t = x / w;
-          const rawPhase = cycle + t * 0.18 - 0.015;
+          const rawPhase = cycle + t * 0.15 - 0.02;
           const phase = ((rawPhase % 1) + 1) % 1;
           let y = centerY;
-          y += Math.sin(x * 0.3 + phaseRef.current * 10) * 0.8;
-          if (phase >= 0.17 && phase < 0.22) {
-            y = centerY - 58 * Math.sin((phase - 0.17) / 0.05 * Math.PI);
-          } else if (phase >= 0.36 && phase < 0.52) {
-            y = centerY - 18 * Math.sin((phase - 0.36) / 0.16 * Math.PI);
+          
+          if (phase >= 0.16 && phase < 0.22) {
+            const qrsPhase = (phase - 0.16) / 0.06;
+            if (qrsPhase >= 0.15 && qrsPhase < 0.5) {
+              y -= 65 * Math.sin((qrsPhase - 0.15) / 0.35 * Math.PI);
+            }
           }
+          
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
@@ -191,21 +239,33 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         ctx.globalAlpha = 1;
         ctx.shadowBlur = 0;
 
-        // ── Moving scan line ──
-        const scanX = (offsetRef.current * w * 0.18) % w;
-        const scanGrad = ctx.createLinearGradient(scanX - 30, 0, scanX + 5, 0);
+        // Enhanced scan line
+        const scanX = (offsetRef.current * w * 0.15) % w;
+        const scanGrad = ctx.createLinearGradient(scanX - 40, 0, scanX + 8, 0);
         scanGrad.addColorStop(0, 'transparent');
-        scanGrad.addColorStop(0.7, `${baseColor}33`);
-        scanGrad.addColorStop(1, `${baseColor}66`);
+        scanGrad.addColorStop(0.6, `${baseColor}44`);
+        scanGrad.addColorStop(0.9, `${baseColor}88`);
+        scanGrad.addColorStop(1, `${baseColor}CC`);
         ctx.fillStyle = scanGrad;
-        ctx.fillRect(scanX - 30, 0, 35, h);
+        ctx.fillRect(scanX - 40, 0, 48, h);
 
+        // Bright dot at scan position
+        ctx.shadowColor = baseColor;
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(scanX, centerY, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // BPM indicator glow
+        const bpmX = w - 80;
+        const bpmY = 20;
+        ctx.font = 'bold 11px Rajdhani';
+        ctx.fillStyle = baseColor;
         ctx.shadowColor = baseColor;
         ctx.shadowBlur = 10;
-        ctx.fillStyle = baseColor;
-        ctx.beginPath();
-        ctx.arc(scanX, centerY, 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillText(`${currentBpm} BPM`, bpmX, bpmY);
         ctx.shadowBlur = 0;
       }
 
@@ -221,7 +281,17 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
 
   return (
     <div className="heartbeat-wrapper">
-      <canvas ref={canvasRef} className="ecg-canvas" width={640} height={300} />
+      <canvas 
+        ref={canvasRef} 
+        className="ecg-canvas" 
+        width={640} 
+        height={280}
+        style={{
+          filter: mode === 'boosted' || mode === 'glitch' 
+            ? 'drop-shadow(0 0 20px rgba(255,0,80,0.5))' 
+            : 'drop-shadow(0 0 20px rgba(0,255,200,0.4))'
+        }}
+      />
     </div>
   );
 }
