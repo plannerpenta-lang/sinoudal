@@ -42,7 +42,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
       const centerY = h / 2;
 
       // ── OSCILLOSCOPE GRID ──
-      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.15)' : 'rgba(0, 114, 109, 0.12)';
+      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.15)' : 'rgba(0, 255, 200, 0.15)';
       ctx.lineWidth = 0.3;
 
       for (let x = 0; x <= w; x += 10) {
@@ -58,7 +58,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         ctx.stroke();
       }
 
-      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.25)' : 'rgba(0, 114, 109, 0.22)';
+      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.25)' : 'rgba(0, 255, 200, 0.2)';
       ctx.lineWidth = 0.6;
       for (let x = 0; x <= w; x += 50) {
         ctx.beginPath();
@@ -67,7 +67,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         ctx.stroke();
       }
 
-      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.35)' : 'rgba(0, 114, 109, 0.35)';
+      ctx.strokeStyle = currentMode === 'glitch' ? 'rgba(236, 0, 24, 0.35)' : 'rgba(0, 255, 200, 0.3)';
       ctx.lineWidth = 0.8;
       for (let y = 0; y <= h; y += 50) {
         ctx.beginPath();
@@ -84,9 +84,9 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
       ctx.stroke();
 
       if (currentMode === 'glitch') {
-        ctx.strokeStyle = '#EC0018';
+        ctx.strokeStyle = '#ff0033';
         ctx.lineWidth = 1.5;
-        ctx.shadowColor = '#EC0018';
+        ctx.shadowColor = '#ff0033';
         ctx.shadowBlur = 15;
         ctx.beginPath();
         ctx.moveTo(0, centerY);
@@ -96,7 +96,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         }
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(236, 0, 24, 0.08)';
+        ctx.fillStyle = 'rgba(255, 0, 51, 0.1)';
         ctx.fillRect(0, 0, w, h);
 
         ctx.strokeStyle = 'rgba(236, 0, 24, 0.4)';
@@ -109,9 +109,9 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
           ctx.stroke();
         }
       } else if (currentMode === 'flatline') {
-        ctx.strokeStyle = 'rgba(0, 191, 176, 0.5)';
+        ctx.strokeStyle = 'rgba(0, 255, 208, 0.5)';
         ctx.lineWidth = 1.5;
-        ctx.shadowColor = '#00BFB0';
+        ctx.shadowColor = '#00ffd0';
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.moveTo(0, centerY);
@@ -120,8 +120,8 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         ctx.shadowBlur = 0;
       } else {
         // ── NORMAL / BOOSTED MODE ──
-        const baseColor = currentMode === 'boosted' ? '#EC0018' : '#00BFB0';
-        const glowColor = currentMode === 'boosted' ? '#EC0018' : '#00BFB0';
+        const baseColor = currentMode === 'boosted' ? '#ff0033' : '#00ffd0';
+        const glowColor = currentMode === 'boosted' ? '#ff0033' : '#00ffd0';
         const lineW = currentMode === 'boosted' ? 2.5 : 2;
 
         ctx.shadowColor = glowColor;
