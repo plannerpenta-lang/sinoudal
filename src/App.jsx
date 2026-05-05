@@ -17,16 +17,16 @@ function App() {
     <SocketProvider>
       <div className="app">
         <nav className="app-nav">
-          <div className="nav-brand">
-            <span className="brand-icon">
-              <img src="/logo-small.webp" alt="logo" width="24" height="24" />
-            </span>
+          <div className="nav-left">
+            <img src="/logo-small.webp" alt="logo" className="nav-small-logo" />
+          </div>
+          <div className="nav-center">
             <img src="/logo-main.webp" alt="BURUNDANGA" className="brand-logo-text" />
           </div>
-          <div className="nav-tabs">
+          <div className="nav-right">
             <button
               onClick={() => setView('participant')}
-              className={view === 'participant' ? 'active' : ''}
+              className={view === 'participant' ? 'active btn-participant' : 'btn-participant'}
             >
               <span className="tab-icon">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -38,7 +38,7 @@ function App() {
             </button>
             <button
               onClick={() => setView('admin')}
-              className={view === 'admin' ? 'active' : ''}
+              className={view === 'admin' ? 'active btn-admin' : 'btn-admin'}
             >
               <span className="tab-icon">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

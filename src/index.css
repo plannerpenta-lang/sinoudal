@@ -90,49 +90,129 @@ body {
   backdrop-filter: blur(20px);
 }
 
-.nav-brand {
+/* ═══ HEADER LAYOUT — THREE COLUMNS ═══ */
+.nav-left {
+  flex: 0 0 120px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 24px;
+}
+
+.nav-small-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.nav-small-logo:hover {
+  opacity: 1;
+}
+
+.nav-center {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  flex-shrink: 0;
-  flex: 1;
-}
-
-.nav-tabs {
-  margin-left: auto;
-}
-
-.brand-icon img {
-  height: 70px;
-  width: auto;
-  object-fit: contain;
 }
 
 .brand-logo-text {
-  height: 80px;
+  height: 85px;
   width: auto;
   object-fit: contain;
-  display: inline-block;
-  vertical-align: middle;
+  display: block;
+  filter: drop-shadow(0 0 20px rgba(227, 28, 75, 0.3));
+  transition: filter 0.3s ease;
 }
 
+.brand-logo-text:hover {
+  filter: drop-shadow(0 0 30px rgba(227, 28, 75, 0.5));
+}
+
+.nav-right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 24px;
+}
+
+/* ═══ NAV BUTTONS — IMPROVED ═══ */
 .app-nav button {
-  flex: 1;
-  padding: 16px 32px;
-  border: none;
-  background: transparent;
-  color: var(--gray-light);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
+  padding: 12px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Rajdhani', monospace;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 3px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-nav button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.app-nav button:hover::before {
+  opacity: 1;
+}
+
+/* ═══ PARTICIPANT BUTTON — YELLOW ACCENT ═══ */
+.btn-participant {
+  border-color: rgba(217, 162, 27, 0.3);
+}
+
+.btn-participant:hover {
+  background: rgba(217, 162, 27, 0.15);
+  border-color: rgba(217, 162, 27, 0.6);
+  color: #D9A21B;
+  box-shadow: 0 0 20px rgba(217, 162, 27, 0.2);
+}
+
+.btn-participant.active {
+  background: linear-gradient(135deg, rgba(217, 162, 27, 0.2), rgba(217, 162, 27, 0.1));
+  border-color: #D9A21B;
+  color: #D9A21B;
+  box-shadow: 
+    0 0 30px rgba(217, 162, 27, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ═══ ADMIN BUTTON — RED ACCENT ═══ */
+.btn-admin {
+  border-color: rgba(227, 28, 75, 0.3);
+}
+
+.btn-admin:hover {
+  background: rgba(227, 28, 75, 0.15);
+  border-color: rgba(227, 28, 75, 0.6);
+  color: #E31C4B;
+  box-shadow: 0 0 20px rgba(227, 28, 75, 0.2);
+}
+
+.btn-admin.active {
+  background: linear-gradient(135deg, rgba(227, 28, 75, 0.2), rgba(227, 28, 75, 0.1));
+  border-color: #E31C4B;
+  color: #E31C4B;
+  box-shadow: 
+    0 0 30px rgba(227, 28, 75, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .app-nav button::before {
