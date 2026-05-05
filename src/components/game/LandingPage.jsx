@@ -43,7 +43,6 @@ export default function LandingPage() {
         if (prev <= 1) {
           clearInterval(questionTimerRef.current);
           setTimerExpired(true);
-          setAudioEnabled(false); // Disable audio when timer expires
           return 0;
         }
         return prev - 1;
