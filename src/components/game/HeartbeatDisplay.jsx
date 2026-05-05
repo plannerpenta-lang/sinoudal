@@ -1,11 +1,37 @@
 import { useEffect, useRef } from 'react';
 
+// Simple beep function using Web Audio API
+const playHeartbeatBeep = (volume = 0.15) => {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Short, subtle beep
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  } catch (e) {
+    // Silent fail if audio not supported
+  }
+};
+
 export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
   const canvasRef = useRef(null);
   const phaseRef = useRef(0);
   const offsetRef = useRef(0);
   const modeRef = useRef(mode);
   const pulseRef = useRef(0);
+  const lastBeatRef = useRef(0);
 
   useEffect(() => {
     modeRef.current = mode;
@@ -170,6 +196,14 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         ctx.moveTo(0, centerY);
 
         const cycle = phaseRef.current;
+
+        // Check if we're at the start of a new beat (QRS complex) to play beep
+        const beatPhase = cycle % 1;
+        if (beatPhase >= 0.16 && beatPhase < 0.18 && lastBeatRef.current !== Math.floor(cycle)) {
+          lastBeatRef.current = Math.floor(cycle);
+          // Play subtle beep synchronized with heartbeat
+          playHeartbeatBeep(isBoosted ? 0.2 : 0.12);
+        }
 
         for (let x = 0; x < w; x++) {
           const t = x / w;
