@@ -164,8 +164,26 @@ export default function LandingPage() {
     );
   }
 
+  // Initialize audio on first user interaction
+  const handleUserInteraction = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
+  };
+
   return (
-    <div className={`landing-page ${glitchActive ? 'glitch-active' : ''}`}>
+    <div 
+      className={`landing-page ${glitchActive ? 'glitch-active' : ''}`}
+      onClick={handleUserInteraction}
+    >
       {alert && (
         <div className={`alert-banner alert-${alert.type}`}>
           <span className="alert-icon">⚠</span>

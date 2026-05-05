@@ -1,9 +1,22 @@
 import { useEffect, useRef } from 'react';
 
 // Simple beep function using Web Audio API
+let audioContext = null;
+
+const initAudioContext = () => {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+};
+
 const playHeartbeatBeep = (volume = 0.15) => {
   try {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    initAudioContext();
+    if (!audioContext) return;
+    
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
