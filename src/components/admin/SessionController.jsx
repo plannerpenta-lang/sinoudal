@@ -1,9 +1,41 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { initAudio, sounds } from '../../utils/sounds';
 import { useSocket } from '../../context/SocketContext';
 import QuestionManager from './QuestionManager';
 import './SessionController.css';
 import './QuestionManager.css';
+
+// Heartbeat audio context for admin
+let heartbeatAudioContext = null;
+
+const playHeartbeatBeep = (volume = 0.2) => {
+  try {
+    if (!heartbeatAudioContext) {
+      heartbeatAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    const ctx = heartbeatAudioContext;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.value = 800;
+    osc.type = 'sine';
+    
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.12);
+    
+    console.log('♥ Admin beep');
+  } catch (e) {
+    console.log('Heartbeat error:', e);
+  }
+};
 
 export default function SessionController() {
   const [sessionActive, setSessionActive] = useState(false);
@@ -11,20 +43,62 @@ export default function SessionController() {
   const [lastAnswer, setLastAnswer] = useState(null);
   const [activeEffect, setActiveEffect] = useState(null);
   const { emit, isConnected } = useSocket();
+  const heartbeatIntervalRef = useRef(null);
 
   initAudio();
+
+  const startHeartbeat = useCallback(() => {
+    const bpm = heartbeatMode === 'boosted' ? 140 : 72;
+    const interval = 60000 / bpm;
+    
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+    }
+    
+    heartbeatIntervalRef.current = setInterval(() => {
+      playHeartbeatBeep();
+    }, interval);
+    
+    console.log(`[ADMIN] Heartbeat started: ${bpm} BPM`);
+  }, [heartbeatMode]);
+
+  const stopHeartbeat = useCallback(() => {
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
+    console.log('[ADMIN] Heartbeat stopped');
+  }, []);
+
+  // Update heartbeat speed when mode changes
+  useEffect(() => {
+    if (sessionActive) {
+      startHeartbeat();
+    }
+  }, [heartbeatMode, sessionActive, startHeartbeat]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+      }
+    };
+  }, []);
 
   const startSession = (questions) => {
     sounds.sessionStart();
     emit('session:start', { questions });
     emit('audio:enable', { enabled: true });
     setSessionActive(true);
+    startHeartbeat();
   };
 
   const endSession = () => {
     sounds.sessionEnd();
     emit('session:end');
     setSessionActive(false);
+    stopHeartbeat();
   };
 
   const nextQuestion = () => {

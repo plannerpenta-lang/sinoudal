@@ -16,7 +16,6 @@ export default function LandingPage() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupAnswer, setPopupAnswer] = useState(null);
   const [alert, setAlert] = useState(null);
-  const [audioEnabled, setAudioEnabled] = useState(false);
   const questionTimerRef = useRef(null);
   const { emit, on, off, isConnected } = useSocket();
   const questionsRef = useRef([]);
@@ -126,11 +125,6 @@ export default function LandingPage() {
       setTimeout(() => setShowPopup(false), 3000);
     };
 
-    const handleAudioEnabled = (data) => {
-      console.log('[LANDING] audio:enabled received:', data.enabled);
-      setAudioEnabled(data.enabled);
-    };
-
     on('session:status', handleStatus);
     on('session:started', handleStarted);
     on('session:questionChanged', handleQuestionChanged);
@@ -139,7 +133,6 @@ export default function LandingPage() {
     on('effect:glitch', handleGlitch);
     on('alert:show', handleAlert);
     on('answer:adminSubmitted', handleAdminSubmitted);
-    on('audio:enabled', handleAudioEnabled);
 
     return () => {
       off('session:status', handleStatus);
@@ -150,7 +143,6 @@ export default function LandingPage() {
       off('effect:glitch', handleGlitch);
       off('alert:show', handleAlert);
       off('answer:adminSubmitted', handleAdminSubmitted);
-      off('audio:enabled', handleAudioEnabled);
     };
   }, [on, off]);
 
@@ -207,7 +199,7 @@ export default function LandingPage() {
               </span>
             </div>
             <div className="heart-box">
-              <HeartbeatDisplay mode={effectiveMode} timeLeft={timeLeft} audioEnabled={audioEnabled} />
+              <HeartbeatDisplay mode={effectiveMode} timeLeft={timeLeft} />
             </div>
           </div>
         </div>
