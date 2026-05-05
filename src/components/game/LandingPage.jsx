@@ -43,6 +43,7 @@ export default function LandingPage() {
         if (prev <= 1) {
           clearInterval(questionTimerRef.current);
           setTimerExpired(true);
+          console.log('[LANDING] Timer expired, emitting timer:expired');
           emit('timer:expired');
           return 0;
         }

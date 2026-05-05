@@ -42,12 +42,18 @@ export default function SessionController() {
   const [heartbeatMode, setHeartbeatMode] = useState('normal');
   const [lastAnswer, setLastAnswer] = useState(null);
   const [activeEffect, setActiveEffect] = useState(null);
+  const [timerExpired, setTimerExpired] = useState(false);
   const { emit, on, off, isConnected } = useSocket();
   const heartbeatIntervalRef = useRef(null);
 
   initAudio();
 
   const startHeartbeat = useCallback(() => {
+    if (timerExpired) {
+      console.log('[ADMIN] Cannot start heartbeat - timer expired');
+      return;
+    }
+    
     const bpm = heartbeatMode === 'boosted' ? 140 : 72;
     const interval = 60000 / bpm;
     
@@ -60,32 +66,36 @@ export default function SessionController() {
     }, interval);
     
     console.log(`[ADMIN] Heartbeat started: ${bpm} BPM`);
-  }, [heartbeatMode]);
+  }, [heartbeatMode, timerExpired]);
 
   const stopHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
       heartbeatIntervalRef.current = null;
+      console.log('[ADMIN] Heartbeat stopped, interval cleared');
+    } else {
+      console.log('[ADMIN] Heartbeat stop called but no interval running');
     }
-    console.log('[ADMIN] Heartbeat stopped');
   }, []);
 
-  // Update heartbeat speed when mode changes
+  // Update heartbeat speed when mode changes (only if timer hasn't expired)
   useEffect(() => {
-    if (sessionActive) {
+    if (sessionActive && !timerExpired) {
       startHeartbeat();
     }
-  }, [heartbeatMode, sessionActive, startHeartbeat]);
+  }, [heartbeatMode, sessionActive, startHeartbeat, timerExpired]);
 
   // Listen for timer expiration to stop heartbeat
   useEffect(() => {
     const handleTimerExpired = () => {
-      console.log('[ADMIN] Timer expired, stopping heartbeat');
+      console.log('[ADMIN] Timer expired event received, stopping heartbeat');
+      setTimerExpired(true);
       stopHeartbeat();
     };
     
     const handleQuestionChanged = () => {
-      console.log('[ADMIN] Question changed, restarting heartbeat');
+      console.log('[ADMIN] Question changed, resetting timerExpired and restarting heartbeat');
+      setTimerExpired(false);
       if (sessionActive) {
         startHeartbeat();
       }
@@ -113,6 +123,7 @@ export default function SessionController() {
     sounds.sessionStart();
     emit('session:start', { questions });
     emit('audio:enable', { enabled: true });
+    setTimerExpired(false);
     setSessionActive(true);
     startHeartbeat();
   };
