@@ -42,14 +42,15 @@ export default function SessionController() {
   const [heartbeatMode, setHeartbeatMode] = useState('normal');
   const [lastAnswer, setLastAnswer] = useState(null);
   const [activeEffect, setActiveEffect] = useState(null);
-  const [timerExpired, setTimerExpired] = useState(false);
-  const { emit, on, off, isConnected } = useSocket();
+  const { emit, isConnected } = useSocket();
   const heartbeatIntervalRef = useRef(null);
+  const adminTimerRef = useRef(null);
+  const timerExpiredRef = useRef(false);
 
   initAudio();
 
   const startHeartbeat = useCallback(() => {
-    if (timerExpired) {
+    if (timerExpiredRef.current) {
       console.log('[ADMIN] Cannot start heartbeat - timer expired');
       return;
     }
@@ -66,7 +67,7 @@ export default function SessionController() {
     }, interval);
     
     console.log(`[ADMIN] Heartbeat started: ${bpm} BPM`);
-  }, [heartbeatMode, timerExpired]);
+  }, [heartbeatMode]);
 
   const stopHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
@@ -78,43 +79,40 @@ export default function SessionController() {
     }
   }, []);
 
+  // Admin timer - counts 8 seconds and stops heartbeat
+  const startAdminTimer = useCallback(() => {
+    if (adminTimerRef.current) clearInterval(adminTimerRef.current);
+    timerExpiredRef.current = false;
+    
+    let timeLeft = 8;
+    console.log('[ADMIN] Timer started: 8 seconds');
+    
+    adminTimerRef.current = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        clearInterval(adminTimerRef.current);
+        timerExpiredRef.current = true;
+        stopHeartbeat();
+        console.log('[ADMIN] Timer expired, heartbeat stopped');
+      }
+    }, 1000);
+  }, [stopHeartbeat]);
+
   // Update heartbeat speed when mode changes (only if timer hasn't expired)
   useEffect(() => {
-    if (sessionActive && !timerExpired) {
+    if (sessionActive && !timerExpiredRef.current) {
       startHeartbeat();
     }
-  }, [heartbeatMode, sessionActive, startHeartbeat, timerExpired]);
+  }, [heartbeatMode, sessionActive, startHeartbeat]);
 
-  // Listen for timer expiration to stop heartbeat
-  useEffect(() => {
-    const handleTimerExpired = () => {
-      console.log('[ADMIN] Timer expired event received, stopping heartbeat');
-      setTimerExpired(true);
-      stopHeartbeat();
-    };
-    
-    const handleQuestionChanged = () => {
-      console.log('[ADMIN] Question changed, resetting timerExpired and restarting heartbeat');
-      setTimerExpired(false);
-      if (sessionActive) {
-        startHeartbeat();
-      }
-    };
-    
-    on('timer:expired', handleTimerExpired);
-    on('session:questionChanged', handleQuestionChanged);
-    
-    return () => {
-      off('timer:expired', handleTimerExpired);
-      off('session:questionChanged', handleQuestionChanged);
-    };
-  }, [on, off, stopHeartbeat, startHeartbeat, sessionActive]);
-
-  // Cleanup on unmount
+  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current);
+      }
+      if (adminTimerRef.current) {
+        clearInterval(adminTimerRef.current);
       }
     };
   }, []);
@@ -123,9 +121,9 @@ export default function SessionController() {
     sounds.sessionStart();
     emit('session:start', { questions });
     emit('audio:enable', { enabled: true });
-    setTimerExpired(false);
     setSessionActive(true);
     startHeartbeat();
+    startAdminTimer();
   };
 
   const endSession = () => {
@@ -133,10 +131,9 @@ export default function SessionController() {
     emit('session:end');
     setSessionActive(false);
     stopHeartbeat();
-  };
-
-  const nextQuestion = () => {
-    emit('session:nextQuestion');
+    if (adminTimerRef.current) {
+      clearInterval(adminTimerRef.current);
+    }
   };
 
   const setBoosted = () => {

@@ -36,15 +36,13 @@ export default function LandingPage() {
   // ── Question Timer ──
   const startQuestionTimer = () => {
     if (questionTimerRef.current) clearInterval(questionTimerRef.current);
-    setTimeLeft(6);
+    setTimeLeft(8);
     setTimerExpired(false);
     questionTimerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(questionTimerRef.current);
           setTimerExpired(true);
-          console.log('[LANDING] Timer expired, emitting timer:expired');
-          emit('timer:expired');
           return 0;
         }
         return prev - 1;
