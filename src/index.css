@@ -175,52 +175,52 @@ body {
 
 /* ═══ PARTICIPANT BUTTON — YELLOW BACKGROUND ═══ */
 .btn-participant {
-  background: #D9A21B;
-  border-color: #D9A21B;
-  color: #1a1a1a;
-  font-weight: 700;
+  background: #D9A21B !important;
+  border-color: #D9A21B !important;
+  color: #1a1a1a !important;
+  font-weight: 700 !important;
 }
 
 .btn-participant:hover {
-  background: #e6b22a;
-  border-color: #e6b22a;
-  color: #1a1a1a;
-  box-shadow: 0 4px 20px rgba(217, 162, 27, 0.4);
-  transform: translateY(-2px);
+  background: #e6b22a !important;
+  border-color: #e6b22a !important;
+  color: #1a1a1a !important;
+  box-shadow: 0 4px 20px rgba(217, 162, 27, 0.4) !important;
+  transform: translateY(-2px) !important;
 }
 
 .btn-participant.active {
-  background: #D9A21B;
-  border-color: #fff;
-  color: #1a1a1a;
+  background: #D9A21B !important;
+  border-color: #fff !important;
+  color: #1a1a1a !important;
   box-shadow: 
     0 0 0 2px #D9A21B,
-    0 4px 20px rgba(217, 162, 27, 0.5);
+    0 4px 20px rgba(217, 162, 27, 0.5) !important;
 }
 
 /* ═══ ADMIN BUTTON — RED BACKGROUND ═══ */
 .btn-admin {
-  background: #E31C4B;
-  border-color: #E31C4B;
-  color: #fff;
-  font-weight: 700;
+  background: #E31C4B !important;
+  border-color: #E31C4B !important;
+  color: #fff !important;
+  font-weight: 700 !important;
 }
 
 .btn-admin:hover {
-  background: #f02d5c;
-  border-color: #f02d5c;
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(227, 28, 75, 0.4);
-  transform: translateY(-2px);
+  background: #f02d5c !important;
+  border-color: #f02d5c !important;
+  color: #fff !important;
+  box-shadow: 0 4px 20px rgba(227, 28, 75, 0.4) !important;
+  transform: translateY(-2px) !important;
 }
 
 .btn-admin.active {
-  background: #E31C4B;
-  border-color: #fff;
-  color: #fff;
+  background: #E31C4B !important;
+  border-color: #fff !important;
+  color: #fff !important;
   box-shadow: 
     0 0 0 2px #E31C4B,
-    0 4px 20px rgba(227, 28, 75, 0.5);
+    0 4px 20px rgba(227, 28, 75, 0.5) !important;
 }
 
 .app-nav button::before {
