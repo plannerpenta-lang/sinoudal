@@ -1,40 +1,36 @@
 import { useEffect, useRef } from 'react';
 
 // Simple beep function using Web Audio API
-let audioContext = null;
-
-const initAudioContext = () => {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioContext.state === 'suspended') {
-    audioContext.resume();
-  }
-};
 
 const playHeartbeatBeep = (volume = 0.15) => {
   try {
-    initAudioContext();
-    if (!audioContext) return;
+    // Create fresh audio context each time to avoid suspension issues
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
     
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
     
     oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    gainNode.connect(ctx.destination);
     
     // Short, subtle beep
-    oscillator.frequency.value = 800;
+    oscillator.frequency.value = 600;
     oscillator.type = 'sine';
     
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.005);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
     
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.1);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.08);
+    
+    console.log('♥ Beep!');
   } catch (e) {
-    // Silent fail if audio not supported
+    console.log('Audio error:', e);
   }
 };
 
