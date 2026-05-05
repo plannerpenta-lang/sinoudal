@@ -34,7 +34,7 @@ const playHeartbeatBeep = (volume = 0.15) => {
   }
 };
 
-export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
+export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null, audioEnabled = false }) {
   const canvasRef = useRef(null);
   const phaseRef = useRef(0);
   const offsetRef = useRef(0);
@@ -226,10 +226,10 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
 
         // Check if we're at the start of a new beat (QRS complex) to play beep
         const beatPhase = cycle % 1;
-        if (beatPhase >= 0.16 && beatPhase < 0.18 && lastBeatRef.current !== Math.floor(cycle)) {
+        if (audioEnabled && beatPhase >= 0.16 && beatPhase < 0.18 && lastBeatRef.current !== Math.floor(cycle)) {
           lastBeatRef.current = Math.floor(cycle);
           // Play subtle beep synchronized with heartbeat
-          playHeartbeatBeep(isBoosted ? 0.2 : 0.12);
+          playHeartbeatBeep(isBoosted ? 0.15 : 0.08);
         }
 
         for (let x = 0; x < w; x++) {

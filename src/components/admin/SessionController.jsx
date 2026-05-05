@@ -17,6 +17,7 @@ export default function SessionController() {
   const startSession = (questions) => {
     sounds.sessionStart();
     emit('session:start', { questions });
+    emit('audio:enable', { enabled: true });
     setSessionActive(true);
   };
 

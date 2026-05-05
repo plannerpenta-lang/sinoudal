@@ -81,6 +81,11 @@ io.on('connection', (socket) => {
     io.emit('answer:adminSubmitted', { answer: data.answer });
   });
 
+  socket.on('audio:enable', (data) => {
+    console.log('[SERVER] audio:enable → broadcasting audio:enabled', data.enabled);
+    io.emit('audio:enabled', { enabled: data.enabled });
+  });
+
   socket.on('disconnect', () => {
     console.log('[SERVER] Client disconnected:', socket.id);
   });
