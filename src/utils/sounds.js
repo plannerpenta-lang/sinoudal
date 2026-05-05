@@ -51,6 +51,13 @@ function playNoise(duration, volume = 0.1) {
   noise.start(ctx.currentTime);
 }
 
+function playAudioFile(url, volume = 0.8) {
+  console.log('[SOUNDS] Playing audio file:', url);
+  const audio = new Audio(url);
+  audio.volume = volume;
+  audio.play().catch(e => console.error('[SOUNDS] Audio play error:', e));
+}
+
 export const sounds = {
   heartbeat: () => {
     playTone(80, 0.15, 'sine', 0.4);
@@ -83,5 +90,13 @@ export const sounds = {
   },
   answerAdmin: () => {
     playTone(520, 0.2, 'sine', 0.25);
+  },
+  answerFalse: () => {
+    console.log('[SOUNDS] answerFalse called');
+    playAudioFile('/dw.mp3', 0.9);
+  },
+  answerTrue: () => {
+    playTone(660, 0.15, 'sine', 0.3);
+    setTimeout(() => playTone(880, 0.2, 'sine', 0.3), 150);
   }
 };

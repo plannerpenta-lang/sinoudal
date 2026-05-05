@@ -48,11 +48,14 @@ export default function SessionController() {
     setTimeout(() => setActiveEffect(null), duration);
   };
 
-  const submitAnswer = (answer) => {
+const submitAnswer = (answer) => {
     console.log('[ADMIN] submitAnswer:', answer, '| isConnected:', isConnected);
-    sounds.answerAdmin();
     setLastAnswer(answer);
     emit('answer:adminSubmit', { answer });
+    
+    const audio = new Audio(answer === 'true' ? '/true.mp3' : '/dw.mp3');
+    audio.volume = 0.9;
+    audio.play().catch(e => console.log('[ADMIN] Audio play error:', e));
   };
 
   return (

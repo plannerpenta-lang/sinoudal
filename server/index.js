@@ -11,7 +11,13 @@ const app = express();
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-  cors: { origin: '*' }
+  cors: { origin: '*' },
+  pingTimeout: 60000,
+  pingInterval: 25000
+});
+
+io.engine.on('connection', (socket) => {
+  console.log('[SERVER] Socket.io engine connection:', socket.id);
 });
 
 // ─── Session State ───────────────────────────────────────────────────────────

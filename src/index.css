@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bebas+Neue&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap');
 
 :root {
-  --red-blood: #EC0018;
+  --red-theater: #EC0018;
   --red-dark: #8C0234;
   --gold: #FFCD00;
-  --teal: #00726D;
+  --teal-theater: #00726D;
   --teal-dark: #004D4A;
   --black: #0A0A0A;
   --black-deep: #050505;
@@ -14,9 +14,11 @@
   --gray: #2A2A2A;
   --gray-light: #888888;
 
-  --font-display: 'Bebas Neue', Impact, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Archivo Black', Impact, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --font-bebas: 'Bebas Neue', Impact, sans-serif;
+  --font-jetbrains: 'JetBrains Mono', monospace;
 
   --glow-red: 0 0 30px rgba(236, 0, 24, 0.6), 0 0 60px rgba(236, 0, 24, 0.3);
   --glow-gold: 0 0 20px rgba(255, 205, 0, 0.5), 0 0 40px rgba(255, 205, 0, 0.2);
