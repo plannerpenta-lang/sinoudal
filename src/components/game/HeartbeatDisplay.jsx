@@ -32,10 +32,13 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
   const modeRef = useRef(mode);
   const pulseRef = useRef(0);
   const lastBeatRef = useRef(0);
+  
+  // Determine effective mode: if timeLeft is 0, show timeout state
+  const effectiveMode = timeLeft === 0 ? 'timeout' : mode;
 
   useEffect(() => {
-    modeRef.current = mode;
-  }, [mode]);
+    modeRef.current = effectiveMode;
+  }, [effectiveMode]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,7 +49,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
     let lastTime = performance.now();
 
     const draw = () => {
-      const currentMode = modeRef.current;
+      const currentMode = effectiveMode;
       const now = performance.now();
       const delta = now - lastTime;
       lastTime = now;
@@ -177,6 +180,21 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         ctx.lineTo(w, centerY);
         ctx.stroke();
         ctx.shadowBlur = 0;
+      } else if (currentMode === 'timeout') {
+        // Timeout - flatline red alert
+        ctx.strokeStyle = `rgba(255, 0, 50, ${0.8 + pulseIntensity * 0.2})`;
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#ff0033';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.moveTo(0, centerY);
+        ctx.lineTo(w, centerY);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        // Red alert glow background
+        ctx.fillStyle = `rgba(255, 0, 50, ${0.1 + pulseIntensity * 0.1})`;
+        ctx.fillRect(0, 0, w, h);
       } else {
         // Normal / Boosted ECG
         const isBoosted = currentMode === 'boosted';
