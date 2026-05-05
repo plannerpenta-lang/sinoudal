@@ -8,7 +8,7 @@ import './QuestionManager.css';
 // Heartbeat audio context for admin
 let heartbeatAudioContext = null;
 
-const playHeartbeatBeep = (volume = 0.2) => {
+const playHeartbeatBeep = (volume = 0.5) => {
   try {
     if (!heartbeatAudioContext) {
       heartbeatAudioContext = new (window.AudioContext || window.webkitAudioContext)();
