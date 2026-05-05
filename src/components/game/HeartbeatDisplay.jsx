@@ -257,16 +257,6 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         ctx.arc(scanX, centerY, 4, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
-
-        // BPM indicator glow
-        const bpmX = w - 80;
-        const bpmY = 20;
-        ctx.font = 'bold 11px Rajdhani';
-        ctx.fillStyle = baseColor;
-        ctx.shadowColor = baseColor;
-        ctx.shadowBlur = 10;
-        ctx.fillText(`${currentBpm} BPM`, bpmX, bpmY);
-        ctx.shadowBlur = 0;
       }
 
       animationId = requestAnimationFrame(draw);
