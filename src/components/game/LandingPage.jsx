@@ -43,6 +43,7 @@ export default function LandingPage() {
         if (prev <= 1) {
           clearInterval(questionTimerRef.current);
           setTimerExpired(true);
+          emit('timer:expired');
           return 0;
         }
         return prev - 1;

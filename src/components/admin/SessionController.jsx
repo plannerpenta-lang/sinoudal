@@ -42,7 +42,7 @@ export default function SessionController() {
   const [heartbeatMode, setHeartbeatMode] = useState('normal');
   const [lastAnswer, setLastAnswer] = useState(null);
   const [activeEffect, setActiveEffect] = useState(null);
-  const { emit, isConnected } = useSocket();
+  const { emit, on, off, isConnected } = useSocket();
   const heartbeatIntervalRef = useRef(null);
 
   initAudio();
@@ -76,6 +76,29 @@ export default function SessionController() {
       startHeartbeat();
     }
   }, [heartbeatMode, sessionActive, startHeartbeat]);
+
+  // Listen for timer expiration to stop heartbeat
+  useEffect(() => {
+    const handleTimerExpired = () => {
+      console.log('[ADMIN] Timer expired, stopping heartbeat');
+      stopHeartbeat();
+    };
+    
+    const handleQuestionChanged = () => {
+      console.log('[ADMIN] Question changed, restarting heartbeat');
+      if (sessionActive) {
+        startHeartbeat();
+      }
+    };
+    
+    on('timer:expired', handleTimerExpired);
+    on('session:questionChanged', handleQuestionChanged);
+    
+    return () => {
+      off('timer:expired', handleTimerExpired);
+      off('session:questionChanged', handleQuestionChanged);
+    };
+  }, [on, off, stopHeartbeat, startHeartbeat, sessionActive]);
 
   // Cleanup on unmount
   useEffect(() => {

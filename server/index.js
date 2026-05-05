@@ -86,6 +86,11 @@ io.on('connection', (socket) => {
     io.emit('audio:enabled', { enabled: data.enabled });
   });
 
+  socket.on('timer:expired', () => {
+    console.log('[SERVER] timer:expired → broadcasting to all clients');
+    io.emit('timer:expired');
+  });
+
   socket.on('disconnect', () => {
     console.log('[SERVER] Client disconnected:', socket.id);
   });
