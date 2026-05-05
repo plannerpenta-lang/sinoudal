@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { initAudio, sounds } from '../../utils/sounds';
 import { useSocket } from '../../context/SocketContext';
-import HeartbeatDisplay from './HeartbeatDisplay';
+import HeartbeatDisplay, { initHeartbeatAudio } from './HeartbeatDisplay';
 import './LandingPage.css';
 
 export default function LandingPage() {
@@ -175,17 +175,7 @@ export default function LandingPage() {
 
   // Initialize audio on first user interaction
   const handleUserInteraction = () => {
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) {
-        const ctx = new AudioContext();
-        if (ctx.state === 'suspended') {
-          ctx.resume();
-        }
-      }
-    } catch (e) {
-      // Ignore
-    }
+    initHeartbeatAudio();
   };
 
   return (

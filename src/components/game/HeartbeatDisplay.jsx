@@ -2,14 +2,33 @@ import { useEffect, useRef } from 'react';
 
 // Simple beep function using Web Audio API
 
+// Global audio context that persists
+let globalAudioContext = null;
+
+export const initHeartbeatAudio = () => {
+  if (!globalAudioContext) {
+    globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (globalAudioContext.state === 'suspended') {
+    globalAudioContext.resume();
+  }
+  // Play a silent sound to unlock audio
+  const oscillator = globalAudioContext.createOscillator();
+  const gainNode = globalAudioContext.createGain();
+  gainNode.gain.value = 0;
+  oscillator.connect(gainNode);
+  gainNode.connect(globalAudioContext.destination);
+  oscillator.start();
+  oscillator.stop(globalAudioContext.currentTime + 0.001);
+  
+  console.log('🔊 Heartbeat audio initialized');
+  return globalAudioContext;
+};
+
 const playHeartbeatBeep = (volume = 0.15) => {
   try {
-    // Create fresh audio context each time to avoid suspension issues
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
+    const ctx = initHeartbeatAudio();
+    if (!ctx) return;
     
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
@@ -17,16 +36,15 @@ const playHeartbeatBeep = (volume = 0.15) => {
     oscillator.connect(gainNode);
     gainNode.connect(ctx.destination);
     
-    // Short, subtle beep
-    oscillator.frequency.value = 600;
+    oscillator.frequency.value = 800;
     oscillator.type = 'sine';
     
     gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.005);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
     
     oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.08);
+    oscillator.stop(ctx.currentTime + 0.12);
     
     console.log('♥ Beep!');
   } catch (e) {
