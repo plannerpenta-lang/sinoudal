@@ -53,8 +53,8 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
         auroraGrad.addColorStop(0, `rgba(255, 0, 80, ${0.15 + pulseIntensity * 0.15})`);
         auroraGrad.addColorStop(0.5, 'rgba(255, 0, 50, 0.03)');
       } else {
-        auroraGrad.addColorStop(0, `rgba(0, 255, 200, ${0.08 + pulseIntensity * 0.08})`);
-        auroraGrad.addColorStop(0.5, 'rgba(0, 255, 200, 0.02)');
+        auroraGrad.addColorStop(0, `rgba(0, 255, 200, ${0.04 + pulseIntensity * 0.04})`);
+        auroraGrad.addColorStop(0.5, 'rgba(0, 255, 200, 0.01)');
       }
       auroraGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = auroraGrad;
@@ -63,7 +63,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
       // Enhanced grid with glow
       ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted' 
         ? `rgba(255, 0, 50, ${0.08 + pulseIntensity * 0.05})`
-        : `rgba(0, 255, 200, ${0.08 + pulseIntensity * 0.05})`;
+        : `rgba(0, 255, 200, ${0.04 + pulseIntensity * 0.03})`;
       ctx.lineWidth = 0.4;
       ctx.shadowBlur = 8;
       ctx.shadowColor = ctx.strokeStyle;
@@ -84,7 +84,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
       // Major grid lines
       ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted'
         ? `rgba(255, 0, 50, ${0.15 + pulseIntensity * 0.1})`
-        : `rgba(0, 255, 200, ${0.15 + pulseIntensity * 0.1})`;
+        : `rgba(0, 255, 200, ${0.08 + pulseIntensity * 0.05})`;
       ctx.lineWidth = 0.8;
       ctx.shadowBlur = 15;
 
@@ -104,7 +104,7 @@ export default function HeartbeatDisplay({ mode = 'normal', timeLeft = null }) {
       // Center line
       ctx.strokeStyle = currentMode === 'glitch' || currentMode === 'boosted'
         ? `rgba(255, 0, 50, ${0.3 + pulseIntensity * 0.2})`
-        : `rgba(0, 255, 200, ${0.3 + pulseIntensity * 0.2})`;
+        : `rgba(0, 255, 200, ${0.15 + pulseIntensity * 0.1})`;
       ctx.lineWidth = 1;
       ctx.shadowBlur = 20;
       ctx.beginPath();
