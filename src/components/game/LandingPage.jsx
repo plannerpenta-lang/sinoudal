@@ -7,6 +7,7 @@ import './LandingPage.css';
 export default function LandingPage() {
   const [phase, setPhase] = useState('idle');
   const [currentQuestion, setCurrentQuestion] = useState(-1);
+  const [totalQuestions, setTotalQuestions] = useState(3);
   const [questions, setQuestions] = useState([]);
   const [heartbeatMode, setHeartbeatMode] = useState('normal');
   const [questionText, setQuestionText] = useState('');
@@ -60,6 +61,7 @@ export default function LandingPage() {
       setQuestions(data.questions);
       questionsRef.current = data.questions;
       setCurrentQuestion(data.currentQuestion);
+      setTotalQuestions(data.totalQuestions || 3);
       setQuestionText(data.questions[data.currentQuestion]?.text || '');
       setHeartbeatMode(data.heartbeatMode || 'normal');
       heartbeatModeRef.current = data.heartbeatMode || 'normal';
@@ -73,6 +75,7 @@ export default function LandingPage() {
       setQuestions(data.questions);
       questionsRef.current = data.questions;
       setCurrentQuestion(data.currentQuestion);
+      setTotalQuestions(data.totalQuestions || 3);
       setQuestionText(data.questions[data.currentQuestion]?.text || '');
       setHeartbeatMode('normal');
       heartbeatModeRef.current = 'normal';
@@ -84,6 +87,7 @@ export default function LandingPage() {
     const handleQuestionChanged = (data) => {
       sounds.questionChange();
       setCurrentQuestion(data.index);
+      if (data.totalQuestions) setTotalQuestions(data.totalQuestions);
       const q = questionsRef.current[data.index];
       if (q) setQuestionText(q.text);
       setTimerExpired(false);
@@ -209,7 +213,7 @@ export default function LandingPage() {
                   {phase === 'idle' ? '--' : String(currentQuestion + 1).padStart(2, '0')}
                 </span>
                 <span className="question-total">
-                  / {questions.length > 0 ? String(questions.length).padStart(2, '0') : '--'}
+                  / {phase === 'idle' ? '--' : String(totalQuestions).padStart(2, '0')}
                 </span>
               </div>
 
