@@ -20,13 +20,25 @@ io.engine.on('connection', (socket) => {
   console.log('[SERVER] Socket.io engine connection:', socket.id);
 });
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // ─── Session State ───────────────────────────────────────────────────────────
 let session = {
   active: false,
   questions: [],
   currentQuestion: -1,
   heartbeatMode: 'normal',
-  paused: false
+  paused: false,
+  totalQuestions: 3,
+  answersReceived: 0
 };
 
 // ─── Socket.io events ───────────────────────────────────────────────────────
@@ -38,27 +50,69 @@ io.on('connection', (socket) => {
     active: session.active,
     questions: session.questions,
     currentQuestion: session.currentQuestion,
-    heartbeatMode: session.heartbeatMode
+    heartbeatMode: session.heartbeatMode,
+    totalQuestions: session.totalQuestions
   });
 
   socket.on('session:start', (data) => {
     if (!data.questions?.length) return;
-    console.log('[SERVER] session:start', data.questions?.length);
+    console.log('[SERVER] session:start with', data.questions?.length, 'questions');
+
+    // Select only 3 random questions
+    const shuffled = shuffleArray(data.questions);
+    const selectedQuestions = shuffled.slice(0, 3);
+
     session.active = true;
-    session.questions = data.questions;
+    session.questions = selectedQuestions;
     session.currentQuestion = 0;
+    session.heartbeatMode = 'normal';
     session.paused = false;
+    session.answersReceived = 0;
+
+    console.log('[SERVER] Selected 3 random questions, session starting');
     io.emit('session:started', {
       questions: session.questions,
-      currentQuestion: session.currentQuestion
+      currentQuestion: session.currentQuestion,
+      totalQuestions: session.totalQuestions
     });
   });
 
   socket.on('session:nextQuestion', () => {
     if (!session.active) return;
-    if (session.currentQuestion < session.questions.length - 1) {
+    if (session.currentQuestion < session.totalQuestions - 1) {
       session.currentQuestion++;
-      io.emit('session:questionChanged', { index: session.currentQuestion });
+      io.emit('session:questionChanged', {
+        index: session.currentQuestion,
+        totalQuestions: session.totalQuestions
+      });
+    }
+  });
+
+  socket.on('answer:adminSubmit', (data) => {
+    console.log('[SERVER] answer:adminSubmit received:', data.answer);
+    session.answersReceived++;
+
+    // Check if this was the last question
+    if (session.answersReceived >= session.totalQuestions) {
+      console.log('[SERVER] All 3 questions answered, ending session automatically');
+      io.emit('answer:adminSubmitted', { answer: data.answer });
+
+      // Small delay to let the popup show before ending
+      setTimeout(() => {
+        session.active = false;
+        io.emit('session:ended');
+        session = {
+          ...session,
+          active: false,
+          questions: [],
+          currentQuestion: -1,
+          heartbeatMode: 'normal',
+          paused: false,
+          answersReceived: 0
+        };
+      }, 1500);
+    } else {
+      io.emit('answer:adminSubmitted', { answer: data.answer });
     }
   });
 
@@ -66,7 +120,15 @@ io.on('connection', (socket) => {
     if (!session.active) return;
     session.active = false;
     io.emit('session:ended');
-    session = { ...session, active: false, questions: [], currentQuestion: -1, heartbeatMode: 'normal', paused: false };
+    session = {
+      ...session,
+      active: false,
+      questions: [],
+      currentQuestion: -1,
+      heartbeatMode: 'normal',
+      paused: false,
+      answersReceived: 0
+    };
   });
 
   socket.on('heartbeat:setMode', (data) => {
@@ -74,11 +136,6 @@ io.on('connection', (socket) => {
     console.log('[SERVER] heartbeat:setMode → broadcasting heartbeat:modeChanged', data.mode);
     session.heartbeatMode = data.mode;
     io.emit('heartbeat:modeChanged', { mode: data.mode });
-  });
-
-  socket.on('answer:adminSubmit', (data) => {
-    console.log('[SERVER] answer:adminSubmit → broadcasting answer:adminSubmitted', data.answer);
-    io.emit('answer:adminSubmitted', { answer: data.answer });
   });
 
   socket.on('audio:enable', (data) => {

@@ -15,6 +15,8 @@ const defaultQuestions = [
 
 export default function QuestionManager({
   sessionActive,
+  currentQuestion = 0,
+  totalQuestions = 3,
   onStart,
   onEnd,
   onNext
@@ -33,6 +35,8 @@ export default function QuestionManager({
     setQuestions(questions.filter(q => q.id !== id));
   };
 
+  const canGoNext = sessionActive && currentQuestion < totalQuestions - 1;
+
   return (
     <div className="question-manager">
       <div className="qm-header">
@@ -40,6 +44,11 @@ export default function QuestionManager({
           <span className="qm-label">Lista de Preguntas</span>
           <span className="qm-count">{questions.length}</span>
         </div>
+        {sessionActive && (
+          <div className="qm-progress">
+            Pregunta {currentQuestion + 1}/{totalQuestions}
+          </div>
+        )}
       </div>
 
       <div className="qm-list">
@@ -96,7 +105,11 @@ export default function QuestionManager({
           </button>
         ) : (
           <div className="qm-active-actions">
-            <button onClick={onNext} className="qm-action-btn btn-next">
+            <button
+              onClick={onNext}
+              className="qm-action-btn btn-next"
+              disabled={!canGoNext}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>

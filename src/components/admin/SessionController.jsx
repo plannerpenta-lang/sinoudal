@@ -41,7 +41,9 @@ export default function SessionController() {
   const [sessionActive, setSessionActive] = useState(false);
   const [heartbeatMode, setHeartbeatMode] = useState('normal');
   const [lastAnswer, setLastAnswer] = useState(null);
-  const { emit, isConnected } = useSocket();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(3);
+  const { emit, on, off, isConnected } = useSocket();
   const heartbeatIntervalRef = useRef(null);
   const adminTimerRef = useRef(null);
   const timerExpiredRef = useRef(false);
@@ -104,6 +106,36 @@ export default function SessionController() {
     }
   }, [heartbeatMode, sessionActive, startHeartbeat]);
 
+  // Listen for session events
+  useEffect(() => {
+    const handleSessionStarted = (data) => {
+      setCurrentQuestion(data.currentQuestion);
+      setTotalQuestions(data.totalQuestions || 3);
+    };
+
+    const handleQuestionChanged = (data) => {
+      setCurrentQuestion(data.index);
+    };
+
+    const handleSessionEnded = () => {
+      setSessionActive(false);
+      stopHeartbeat();
+      if (adminTimerRef.current) {
+        clearInterval(adminTimerRef.current);
+      }
+    };
+
+    on('session:started', handleSessionStarted);
+    on('session:questionChanged', handleQuestionChanged);
+    on('session:ended', handleSessionEnded);
+
+    return () => {
+      off('session:started', handleSessionStarted);
+      off('session:questionChanged', handleQuestionChanged);
+      off('session:ended', handleSessionEnded);
+    };
+  }, [on, off, stopHeartbeat]);
+
   // Cleanup timers on unmount
   useEffect(() => {
     return () => {
@@ -121,6 +153,8 @@ export default function SessionController() {
     emit('session:start', { questions });
     emit('audio:enable', { enabled: true });
     setSessionActive(true);
+    setCurrentQuestion(0);
+    setTotalQuestions(3);
     timerExpiredRef.current = false;
     startAdminTimer();
     startHeartbeat();
@@ -183,6 +217,8 @@ const submitAnswer = (answer) => {
 
       <QuestionManager
         sessionActive={sessionActive}
+        currentQuestion={currentQuestion}
+        totalQuestions={totalQuestions}
         onStart={startSession}
         onEnd={endSession}
         onNext={nextQuestion}
