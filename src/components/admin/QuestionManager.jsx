@@ -1,11 +1,16 @@
 import { useState } from 'react';
 
 const defaultQuestions = [
-  { id: 1, text: '¿Te gusta el teatro?' },
-  { id: 2, text: '¿Alguna vez mentiste en el escenario?' },
-  { id: 3, text: '¿Confías en tus compañeros actores?' },
-  { id: 4, text: '¿Alguna vez olvidaste tus líneas?' },
-  { id: 5, text: '¿Te consideras una persona honesta?' },
+  { id: 1, text: '¿Tienes un secreto que cambie tu vida?' },
+  { id: 2, text: '¿Has mentido para evitar una pelea?' },
+  { id: 3, text: '¿Tienes un crush prohibido?' },
+  { id: 4, text: '¿Dudas de tu relación actual?' },
+  { id: 5, text: '¿Has stalkeado a alguien recientemente?' },
+  { id: 6, text: '¿Has traicionado a algún amigo?' },
+  { id: 7, text: '¿Cubrirías el crimen de un amigo?' },
+  { id: 8, text: '¿Te has sentido atraído por alguien de este grupo? *Señalar' },
+  { id: 9, text: '¿Volverías con tu ex?' },
+  { id: 10, text: '¿Aceptarías dinero por ocultar una verdad?' },
 ];
 
 export default function QuestionManager({
