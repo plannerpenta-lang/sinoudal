@@ -57,10 +57,12 @@ io.on('connection', (socket) => {
   socket.on('session:start', (data) => {
     if (!data.questions?.length) return;
     console.log('[SERVER] session:start with', data.questions?.length, 'questions');
+    console.log('[SERVER] Original questions order:', data.questions.map(q => q.id));
 
     // Select only 3 random questions
     const shuffled = shuffleArray(data.questions);
     const selectedQuestions = shuffled.slice(0, 3);
+    console.log('[SERVER] Selected questions (shuffled):', selectedQuestions.map(q => q.id));
 
     session.active = true;
     session.questions = selectedQuestions;
